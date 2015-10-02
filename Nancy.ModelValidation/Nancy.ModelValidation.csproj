@@ -45,7 +45,6 @@
   <ItemGroup>
     <Compile Include="Models\ValidatorModel.cs" />
     <Compile Include="Models\IntegrateModel.cs" />
-    <Compile Include="Models\UserModel.cs" />
     <Compile Include="NancyAttributes\RegexPatterns.cs" />
     <Compile Include="NancyAttributes\RequestModelTypeAttribute.cs" />
     <Compile Include="NancyAttributes\ValidateAttribute.cs" />
