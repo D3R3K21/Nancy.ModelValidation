@@ -30,9 +30,22 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Nancy, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nancy.1.3.0\lib\net40\Nancy.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Integrate, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Local Nuget Packages\Integrate.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Bson">
+      <HintPath>..\packages\mongocsharpdriver.1.9.2\lib\net35\MongoDB.Bson.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver">
+      <HintPath>..\packages\mongocsharpdriver.1.9.2\lib\net35\MongoDB.Driver.dll</HintPath>
+    </Reference>
+    <Reference Include="Nancy, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Local Nuget Packages\Nancy.dll</HintPath>
+    </Reference>
+    <Reference Include="Nancy.Hosting.Self">
+      <HintPath>..\packages\Nancy.Hosting.Self.1.0.0\lib\net40\Nancy.Hosting.Self.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -43,14 +56,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\ValidatorModel.cs" />
-    <Compile Include="Models\IntegrateModel.cs" />
-    <Compile Include="NancyAttributes\RegexPatterns.cs" />
-    <Compile Include="NancyAttributes\RequestModelTypeAttribute.cs" />
-    <Compile Include="NancyAttributes\ValidateAttribute.cs" />
-    <Compile Include="NancyAttributes\ValidateGuidAttribute.cs" />
-    <Compile Include="NancyAttributes\ValidateRegexAttribute.cs" />
-    <Compile Include="NancyAttributes\ValidateRequiredAttribute.cs" />
+    <Compile Include="Models\NancyValidatorModel.cs" />
+    <Compile Include="Attributes\RegexPatterns.cs" />
+    <Compile Include="Attributes\ValidateAttribute.cs" />
+    <Compile Include="Attributes\ValidateGuidAttribute.cs" />
+    <Compile Include="Attributes\ValidateRegexAttribute.cs" />
+    <Compile Include="Attributes\ValidateRequiredAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Validator\Validator.cs" />
     <Compile Include="Validator\ValidatorReturnObject.cs" />

@@ -3,29 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Nancy.ModelBinding;
 
 namespace Nancy.ModelValidation
 {
     public static class Validator
     {
         private static Dictionary<Type, Dictionary<PropertyInfo, List<ValidateAttribute>>> _modelPropertyMappings;
-        private static Dictionary<Type, Func<NancyModule, NancyValidatorModel, object>> _bindingMappings;
+        private static Dictionary<Type, Func<NancyModule, Type, object>> _bindingMappings;
         private static List<Type> _modelTypes;
 
         private static MethodInfo BindMethodInfo { get; set; }
-        private static NancyModule _moduleInstance;
 
         public static void Initialize()
         {
-            
+
             var assembly = Assembly.GetCallingAssembly();
-            
+            NancyModule _moduleInstance;
             var moduleType = GetDerivedTypes(assembly, typeof(NancyModule)).First();
             _moduleInstance = (NancyModule)Activator.CreateInstance(moduleType);
 
-            
-            
+
+
             _modelTypes = GetDerivedTypes(assembly, typeof(NancyValidatorModel));
 
             GetModelPropertyMappings();
@@ -39,9 +37,9 @@ namespace Nancy.ModelValidation
         static Validator()
         {
             _modelPropertyMappings = new Dictionary<Type, Dictionary<PropertyInfo, List<ValidateAttribute>>>();
-            _bindingMappings = new Dictionary<Type, Func<NancyModule, NancyValidatorModel, object>>();
+            _bindingMappings = new Dictionary<Type, Func<NancyModule, Type, object>>();
             _modelTypes = new List<Type>();
-            BindMethodInfo = typeof(ModuleExtensions).GetMethods().First(p => p.Name == "Bind"
+            BindMethodInfo = typeof(Nancy.ModelBinding.ModuleExtensions).GetMethods().First(p => p.Name == "Bind"
                 && p.IsGenericMethod
                 && p.GetParameters().Length == 1);
         }
@@ -72,12 +70,9 @@ namespace Nancy.ModelValidation
 
         private static void CreateDelegate(NancyModule mod, Type modelType)
         {
-            var genericMethodInfo = BindMethodInfo.MakeGenericMethod(modelType);
-
-            Expression<Func<NancyModule, NancyValidatorModel, object>> func = (o, m) =>
-            Convert.ChangeType(genericMethodInfo.Invoke(BindMethodInfo.DeclaringType, new object[] { o }), m.DerivedType);
-
-            _bindingMappings.Add(modelType, func.Compile());
+            Func<NancyModule, Type, object> func = (module, type) =>
+            Convert.ChangeType(BindMethodInfo.MakeGenericMethod(modelType).Invoke(BindMethodInfo.DeclaringType, new object[] { module }), type);
+            _bindingMappings.Add(modelType, func);
 
         }
 
@@ -91,16 +86,14 @@ namespace Nancy.ModelValidation
 
         public static List<ValidatorReturnObject> Validate(this NancyValidatorModel model)
         {
-
             var returnList = new List<ValidatorReturnObject>();
-            var modelProperties = _modelPropertyMappings[model.DerivedType];
+            var modelProperties = _modelPropertyMappings[model.GetType()];
 
 
             var propinfolist = modelProperties.Select(p => p.Key).ToList();
 
             propinfolist.ForEach(p =>
             {
-                //reflection used in validation
                 var propertyValue = p.GetValue(model, null);
 
                 var attList = modelProperties[p];
@@ -120,14 +113,10 @@ namespace Nancy.ModelValidation
             return returnList;
         }
 
-        public static dynamic BindModel(NancyValidatorModel model)
+        public static dynamic BindModel(this NancyModule mod, Type modelType)
         {
-            var modelType = model.GetType();
-            var mapping = _bindingMappings[modelType];
 
-
-
-            return _bindingMappings[model.DerivedType](_moduleInstance, model);
+            return _bindingMappings[modelType](mod, modelType);
 
         }
 
