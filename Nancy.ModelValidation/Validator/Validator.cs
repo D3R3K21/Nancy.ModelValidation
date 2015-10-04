@@ -113,10 +113,10 @@ namespace Nancy.ModelValidation
             return returnList;
         }
 
-        public static dynamic BindModel(this NancyModule mod, Type modelType)
+        public static NancyValidatorModel BindModel(this NancyModule mod, Type modelType)
         {
 
-            return _bindingMappings[modelType](mod, modelType);
+            return (NancyValidatorModel)_bindingMappings[modelType](mod, modelType);
 
         }
 
