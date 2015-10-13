@@ -1,15 +1,15 @@
-﻿using System;
-using System.Reflection;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Nancy.ModelValidation
 {
     public class ValidateRegexAttribute : ValidateAttribute
     {
         private readonly Regex _regex;
+
         private ValidateRegexAttribute()
         {
         }
+
         /// <summary>
         /// 
         /// </summary>
@@ -28,15 +28,11 @@ namespace Nancy.ModelValidation
             {
                 return false;
             }
-            else if (val == null)
+            if (val == null || (val as string).Trim() == string.Empty)
             {
-                return _regex.Match(string.Empty.Trim()).Success;
+                return true;
             }
-            else
-            {
-                return _regex.Match((val as string).Trim()).Success;
-            }
+            return _regex.Match((val as string).Trim()).Success;
         }
-
     }
 }

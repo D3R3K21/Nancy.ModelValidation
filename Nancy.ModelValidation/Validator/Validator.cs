@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Nancy.ModelValidation
@@ -14,36 +13,30 @@ namespace Nancy.ModelValidation
 
         private static MethodInfo BindMethodInfo { get; set; }
 
-        public static void Initialize()
-        {
-
-            var assembly = Assembly.GetCallingAssembly();
-            NancyModule _moduleInstance;
-            var moduleType = GetDerivedTypes(assembly, typeof(NancyModule)).First();
-            _moduleInstance = (NancyModule)Activator.CreateInstance(moduleType);
-
-
-
-            _modelTypes = GetDerivedTypes(assembly, typeof(NancyValidatorModel));
-
-            GetModelPropertyMappings();
-            _modelTypes.ForEach(p =>
-            {
-                CreateDelegate(_moduleInstance, p);
-            });
-
-        }
 
         static Validator()
         {
             _modelPropertyMappings = new Dictionary<Type, Dictionary<PropertyInfo, List<ValidateAttribute>>>();
             _bindingMappings = new Dictionary<Type, Func<NancyModule, Type, object>>();
             _modelTypes = new List<Type>();
-            BindMethodInfo = typeof(Nancy.ModelBinding.ModuleExtensions).GetMethods().First(p => p.Name == "Bind"
-                && p.IsGenericMethod
-                && p.GetParameters().Length == 1);
+            BindMethodInfo = typeof(ModelBinding.ModuleExtensions).GetMethods().First(p => p.Name == "Bind"
+                                                                                            && p.IsGenericMethod
+                                                                                            && p.GetParameters().Length == 1);
         }
 
+        public static void Initialize()
+        {
+            var assembly = Assembly.GetEntryAssembly();
+            NancyModule moduleInstance;
+            var derivedModule = GetDerivedTypes(assembly, typeof(NancyModule)).First();
+            moduleInstance = (NancyModule)Activator.CreateInstance(derivedModule);
+
+
+            _modelTypes = GetDerivedTypes(assembly, typeof(NancyValidatorModel));
+
+            GetModelPropertyMappings();
+            _modelTypes.ForEach(p => { CreateDelegate(moduleInstance, p); });
+        }
 
         private static void GetModelPropertyMappings()
         {
@@ -56,10 +49,7 @@ namespace Nancy.ModelValidation
                 modelProperties.ForEach(propertyInfo =>
                 {
                     var attList = new List<ValidateAttribute>();
-                    propertyInfo.CustomAttributes.ToList().ForEach(p =>
-                    {
-                        attList.Add((ValidateAttribute)Attribute.GetCustomAttribute(propertyInfo, p.AttributeType));
-                    });
+                    propertyInfo.CustomAttributes.ToList().ForEach(p => { attList.Add((ValidateAttribute)Attribute.GetCustomAttribute(propertyInfo, p.AttributeType)); });
 
                     dictionary.Add(propertyInfo, attList);
                 });
@@ -71,16 +61,14 @@ namespace Nancy.ModelValidation
         private static void CreateDelegate(NancyModule mod, Type modelType)
         {
             Func<NancyModule, Type, object> func = (module, type) =>
-            Convert.ChangeType(BindMethodInfo.MakeGenericMethod(modelType).Invoke(BindMethodInfo.DeclaringType, new object[] { module }), type);
+                Convert.ChangeType(BindMethodInfo.MakeGenericMethod(modelType).Invoke(BindMethodInfo.DeclaringType, new object[] { module }), type);
             _bindingMappings.Add(modelType, func);
-
         }
 
         private static List<Type> GetDerivedTypes(Assembly assembly, Type baseType)
         {
             return assembly.GetTypes().Where(t => baseType.IsAssignableFrom(t) && t != baseType && !t.Name.Contains("`1")).ToList();
         }
-
 
         #region Public Extensions
 
@@ -99,7 +87,6 @@ namespace Nancy.ModelValidation
                 var attList = modelProperties[p];
                 attList.ForEach(x =>
                 {
-
                     returnList.Add(new ValidatorReturnObject
                     {
                         PropertyName = p.Name,
@@ -115,13 +102,18 @@ namespace Nancy.ModelValidation
 
         public static NancyValidatorModel BindModel(this NancyModule mod, Type modelType)
         {
-
+            NancyValidatorModel returnModel;
+            try
+            {
+                returnModel = (NancyValidatorModel)_bindingMappings[modelType](mod, modelType);
+            }
+            catch (Exception ex)
+            {
+                Console.Out.WriteLine(ex);
+            }
             return (NancyValidatorModel)_bindingMappings[modelType](mod, modelType);
-
         }
 
         #endregion
-
-
     }
 }

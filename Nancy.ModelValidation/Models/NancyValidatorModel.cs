@@ -1,12 +1,6 @@
-﻿using System;
-
-namespace Nancy.ModelValidation
+﻿namespace Nancy.ModelValidation
 {
     public abstract class NancyValidatorModel
     {
-        protected NancyValidatorModel()
-        {
-        }
-
     }
 }

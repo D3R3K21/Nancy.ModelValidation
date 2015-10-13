@@ -1,11 +1,11 @@
-﻿using System;
-namespace Nancy.ModelValidation
+﻿namespace Nancy.ModelValidation
 {
     public class ValidateRequiredAttribute : ValidateAttribute
     {
         private ValidateRequiredAttribute()
         {
         }
+
         /// <summary>
         /// 
         /// </summary>
@@ -18,11 +18,9 @@ namespace Nancy.ModelValidation
 
         public override bool Valitade<T>(T val)
         {
-
             if (val is string)
             {
                 return (val as string).Trim() != string.Empty;
-
             }
             return val != null;
         }

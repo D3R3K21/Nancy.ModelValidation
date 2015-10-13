@@ -4,10 +4,10 @@ namespace Nancy.ModelValidation
 {
     public class ValidateGuidAttribute : ValidateAttribute
     {
-
         private ValidateGuidAttribute()
         {
         }
+
         /// <summary>
         /// 
         /// </summary>
@@ -19,7 +19,7 @@ namespace Nancy.ModelValidation
 
         public override bool Valitade<T>(T val)
         {
-            return new Guid(val.ToString()) != default(Guid);
+            return val is Guid?;
         }
     }
 }

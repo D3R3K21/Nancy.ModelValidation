@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Nancy.ModelValidation
 {
-    public class ValidatorRouteBuilder : Nancy.NancyModule.RouteBuilder
+    public class ValidatorRouteBuilder : NancyModule.RouteBuilder
     {
         public ValidatorRouteBuilder(string method, NancyModule parentModule)
             : base(method, parentModule)
@@ -21,6 +18,7 @@ namespace Nancy.ModelValidation
                 AddRoute(endpointName, path, ctx =>
                 {
                     #region ModelValidation
+
                     if (modelType.BaseType == typeof(NancyValidatorModel))
                     {
                         ctx.Items.Add("RequestModel", modelType);

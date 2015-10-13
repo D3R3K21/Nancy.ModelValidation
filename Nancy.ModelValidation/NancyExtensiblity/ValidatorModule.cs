@@ -1,50 +1,43 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Nancy.ModelValidation
 {
     public class ValidatorModule : NancyModule
     {
         public NancyValidatorModel ResolvedModel { get; set; }
+
         public ValidatorModule()
         {
-            this.Before += ValidateBeforeRequest;
+            Before += ValidateBeforeRequest;
         }
+
         public ValidatorModule(string path)
             : base(path)
         {
-            this.Before += ValidateBeforeRequest;
+            Before += ValidateBeforeRequest;
         }
 
 
         protected virtual Response ValidateBeforeRequest(NancyContext context)
         {
             Response response = null;
-            object modelType = null;
-            Type typedModel = null;
+            object modelType;
 
-            if (context.Items.TryGetValue("RequestModel", out modelType))
+            if (!context.Items.TryGetValue("RequestModel", out modelType)) return response;
+
+            var model = this.BindModel((Type)modelType);
+            var validationResponse = model.Validate();
+            var allValidCheck = validationResponse.All(p => p.IsValid);
+            ResolvedModel = model;
+
+            if (allValidCheck) return response;
+
+            response = Response.AsJson(new
             {
-                typedModel = (Type)modelType;
-                var model = this.BindModel(typedModel);
-                var validationResponse = model.Validate();
-                var allValidCheck = validationResponse.All(p => p.IsValid);
-                ResolvedModel = model;
-                if (!allValidCheck)
-                {
-                    response = Response.AsJson(new
-                    {
-                        Model = ResolvedModel,
-                        InvalidProperties = validationResponse.Where(p => !p.IsValid).ToList()
-                    });
-                }
-
-            }
-
-
+                Model = ResolvedModel,
+                InvalidProperties = validationResponse.Where(p => !p.IsValid).ToList()
+            });
             return response;
         }
 
@@ -67,6 +60,7 @@ namespace Nancy.ModelValidation
         {
             get { return new ValidatorRouteBuilder("PUT", this); }
         }
+
         public new ValidatorRouteBuilder Options
         {
             get { return new ValidatorRouteBuilder("OPTIONS", this); }
